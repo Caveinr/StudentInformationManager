@@ -380,7 +380,7 @@ int savef(Stu *head, Stu *tail)
 		file << '0' << p->id << p->name <<'\t'<< p->sex << p->building <<'\t'<< p->room <<endl;
 		p=p->next;
 	}
-	file << '0';
+	file << '1';//the end of linked list , used in reading file
 		file.close();
 	return 1;//complete saving
 }
