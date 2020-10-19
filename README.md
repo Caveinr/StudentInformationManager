@@ -1,9 +1,9 @@
 # StudentInformationManager
 学生信息管理器 (取这个名字是当初以为还要做寝室信息以外的东西.
 
-A large "hellow world" application, which gulp a bunch of memery of 7 Poke*on first generation(128k).
+A large "hello world" application, which gulp a bunch of memery of 7 Poke*on first generation(128k).
 
-成果就是这个大型　"hellow world"　程序，一打开就直接吃掉７个宝＊梦无印(128k).(以msvc编译,打开后911k)
+成果就是这个大型　"hello world"　程序，一打开就直接吃掉７个宝＊梦无印(128k).(以msvc编译,打开后911k)
 
 使用前请在程序所在位置创建一个si.txt(如果没有的话
 
