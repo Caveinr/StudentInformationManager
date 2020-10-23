@@ -4,5 +4,5 @@
 020000003Abel   m2  102
 020000004Seth   m1  103
 1
-(words wrotten on after '1' won't take effect.)
+(words written on after '1' won't take effect.)
 A demo which shows what a database this program use.
