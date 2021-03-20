@@ -2,267 +2,169 @@
 #include<iostream>
 #include<fstream>//for file io
 #include<io.h>//for using function access()
-#include<cstdlib>
-#include<limits>
+#include"SIM.h"
 
-//global settings
-using namespace std;
-
-typedef struct Stu //dssds
+//private
+//link list func
+bool SIM::savedb()
 {
-	int id;
-	char name[16];//consider there'll be English name
-	char sex;//m or f
-	int building;
-	int room;
-	struct Stu *next;//end address of Stu, store where next Stu start
-} Stu;
-Stu *head, *tail;
-
-/**typedef struct bptnode //node of b+tree, will achieve in the next version
-{
-	bptnode *subf//first subnode
-	bptnode *subm//middle subnode
-	bptnode *subl//last subnode
-}bptnode;**/
-
-//user interaction function
-void printHelp();//print help information
-void invalid();//tell user input invalid
-char scask();//ask for sanity checked char
-void printStu(Stu *p);//print given Stu informations
-void printRoom(int building, int room);//print room members by given Stu
-
-//file r/w function
-int check();//check database is exactly where program locate
-int readf();//txt >> mem
-int savef();//txt << mem
-int modify(Stu *p,int a);//change the record of the given pointer,a means which to get modified
-int create(Stu *p);//create Stu (next version will also update b+tree
-int link(Stu *p);//link p to list (next version will also update b+tree
-Stu *findId(int id);//return Stu by id (next version will support search in b+tree
-Stu *findName(char *name);//reture Stu by name (next version will support search in b+tree
-
-int main()
-{
-	//TODO using XML instead ot txt
-	//TODO:check if cache is up to date.(by using C++17 std::filesystem)
-	//Check if si.txt does exist and r/writable
-	if(check())
-		return 1;
-	//initialize global pointer head and tail
-	head = NULL;
-	tail = NULL;
-	//load linked list(and create b+tree, next version
-	readf();
-
-	//interaction with user
-	cout <<"Welcome to Student Information Manager!" <<endl;
-	printHelp();
-	while (1)//infinite loop
+	using namespace std;
+	if (head == NULL)
 	{
-		cout << "So, what do you want to do?" << endl;
-		switch (scask())
-		{
-			case 'h': printHelp(); break;
-			case 'H': printHelp(); break;//in case of ones whose Caps always lock
-			case '1': //look up
-			{
-				cout << "Which way do you want to look up by?" << endl;
-				while (1)
-				{
-					cout << "Press 1 by id." << endl;
-					cout << "Press 2 by name." << endl;
-					cout << "Press any other key to go back to the main menu." << endl;
-					
-					Stu *target;
-					target = NULL;
-					switch (scask())
-					{
-					case '1':
-					{
-						cout << "Id?" << endl;
-						int answer=0;
-						cin>>answer;
-						cin.clear();
-						cin.ignore(numeric_limits<streamsize>::max(), '\n');
-						target = findId(answer);
-						break;
-					}
-					case '2':
-					{
-						cout << "Name?" << endl;
-						char name[16];
-						cin >>name;
-						cin.clear();
-						cin.ignore(numeric_limits<streamsize>::max(), '\n');
-						target = findName(name);
-						break;
-					}
-					default:;
-					}
-					if (target == NULL)
-					{ 
-						cout << "Not found." << endl;
-						break;
-					}
-					printStu(target);
-					cout << "Modify record?y/n"<<endl;
-					switch (scask())
-					{
-					case 'y':;
-					case 'Y':
-						cout << "Choose one to proceed" << endl;
-						char answer;
-						while (1)
-						{							
-							cout << "Press 1 to change id" << endl;
-							cout << "Press 2 to change name" << endl;
-							cout << "Press 3 to change sex" << endl;
-							cout << "Press 4 to change building" << endl;
-							cout << "Press 5 to change room" << endl;
-							cout << "Press 6 to delete current record."<<endl;
-							cout << "Press any other key to cancel." << endl;
-							int a = 0;
-							cin >> a;
-							cin.clear();
-							cin.ignore(numeric_limits<streamsize>::max(), '\n');
-							if (a <= 0 || a > 6)
-								break;
-							if (modify(target, a)==2)
-								goto complete;
-							cout << "Continue to change other attribute?y/n"<<endl;
-							answer = scask();
-							if (answer != 'y' || answer != 'Y')
-								break;
-						} 
-					default:
-					free(target);
-					}
-					complete:
-					cout << "Operation complete."<<endl;
-					break;
-				}
-				break;
-			}
-			case '2': //to see roommates
-			{
-				Stu *p;
-				p = (Stu*)malloc(sizeof(Stu));
-				cout << "Which one do you want to search by?" << endl;
-				cout << "Press 1 by id." << endl;
-				cout << "Press 2 by name." << endl;
-				cout << "Press 3 by building with room." << endl;
-				cout << "Press any other key back to main menu."<<endl;
-				switch (scask())
-				{
-				case '1':
-				{
-					
-					cout << "Please input room member's id."<<endl;
-					int id = 0;
-					cin >> id;
-					cin.clear();
-					cin.ignore(numeric_limits<streamsize>::max(), '\n');
-					p = findId(id);
-					printRoom(p->building, p->room);
-					free(p);
-					break;
-				}
-				case '2':
-				{	
-					cout << "Please input room member's name."<<endl;
-					char name[16];
-					cin.clear();
-					cin.ignore(numeric_limits<streamsize>::max(), '\n');
-					p = findName(name);
-					printRoom(p->building, p->room);
-					free(p);
-					break;
-				}
-				case '3':
-					cout << "Please input the building of room." << endl;
-					{
-						int building, room;
-						do
-						{
-							cout << "Building:" << endl;
-							cin >> building;
-							cin.clear();
-							cin.ignore(numeric_limits<streamsize>::max(), '\n');
-							if (building <= 0)
-							invalid();
-						} while (building <= 0);
-						do
-						{
-							cout << "Room:" << endl;
-							cin >> room;
-							cin.clear();
-							cin.ignore(numeric_limits<streamsize>::max(), '\n');
-							if (room <= 0 || room >= 1000)
-								invalid();
-						} while (room <= 0 || room >= 1000);
-						printRoom(building, room);
-						break;
-					}
-					break;
-				}
-				free(p);
-			}
-			case '3'://add new
-			{
-				Stu *add;
-				add = (Stu*)malloc(sizeof(Stu));
-				if(create(add)==2)
-					free(add);//add cancele. so memory allocated should be freed
-				break;
-			}
-			case '4':
-			{
-				if(savef())
-					cout<< "Changes saved."<<endl;
-				else
-					cout<< "Failed to save Changes."<<endl;
-				cout<< "Press enter to exit";
-				cin.get();
-				exit(0);
-			}
-			default:
-			{	
-				cout << "Quit the application?y/n" << endl;
-				char answer = scask();
-					if (answer == 'Y' || answer == 'y')
-				return 0;//end the application
-			}
-		}
+		cout << "Nothing there.\n";
+		return true;
 	}
+	Stu* p;
+	p = head;
+	//check si.txt
+	ofstream file("si.txt");//delete and write file
+	if (!file)
+	{
+		cout << "Unknown error. Saving canceled.\n";
+		return false;//file doesn't exist
+	}
+	cout << "Checking complete.";
+	//start save file
+	p = head;
+	cout << "Saving...\n" << endl;
+	while (p)
+	{
+		file << '0' << p->id << p->name << '\t' << p->sex << p->building << '\t' << p->room << endl;
+		p = p->next;
+	}
+	file << '1';
+	file.close();
+	return true;//complete saving
 }
 
-//user interaction function
-void printHelp()
+bool SIM::push(Stu* p)
 {
-	cout << "Press 1 to look up a student or then modify it." << endl;
-	cout << "Press 2 to check roommates." << endl;
-	cout << "Press 3 to add a new student." << endl;
-	cout<< "Press 4 to save all changes"<<endl;
-	cout << "Any other key to quit." << endl;
-	cout << "Press h to see this message again." << endl;
-}
-void invalid()
-{
-	cout << "Invalid!Please input again." << endl;
-}
-void printStu(Stu *p)
-{
-	if (p)
-		cout << "Id:" << p->id << "\tName:" << p->name << "\tSex:" << p->sex << "\tBuilding:" << p->building << "\tRoom:" << p->room << endl;
+	if (head == NULL)
+	{
+		head = tail = p;
+		head->next = NULL;
+	}
 	else
-		cout << "Fully matched student not found!" << endl;
+	{
+		tail->next = p;
+		tail = p;
+	}
+	tail->next = NULL;
+	return true;
+}
+
+bool SIM::remove(Stu* p)
+{
+	if (p == head)//if p is head of list
+	{
+		head = head->next;
+		free(p);
+		return true;
+	}
+	//if p isn't head of list
+	Stu* pre;
+	pre = head;
+	while (pre->next != p)
+	{
+		pre = pre->next;
+	}
+	pre->next = p->next;
+	free(p);
+	return true;
+}
+
+//special member func
+SIM::Stu* SIM::findById(int id)
+{
+	Stu* p;
+	if (head == NULL)
+		return NULL;
+	p = head;
+	while (p && (p->id != id))
+	{
+		p = p->next;
+	}
+	return p;
+}
+
+SIM::Stu* SIM::findByName(string name)
+{
+	Stu* p;
+	p = head;
+	while (p && name==p->name)
+	{
+		p = p->next;
+	}
+	return p;
+}
+
+//public
+//special member func
+SIM::SIM()
+{
+	using namespace std;
+	//check if si.txt exits 
+	if (_access("si.txt", 02))
+	{
+		cout << "\"si.txt\" appears not exist or permission denied!." << endl;
+		cout << "If it does not exsit, please make a new one where program locate." << endl;
+		cout << "Press enter to exit." << endl;
+		cin.get();//pause
+		exit(1);
+	}
+	//build link list
+	head = tail = NULL;
+	Stu* p;
+	ifstream file("si.txt");
+	char test;
+	file >> test;
+	while (test == '0')
+	{
+		p = (Stu*)malloc(sizeof(Stu));
+		if (p == NULL)
+		{
+			cout << "Data loading failed. Exiting...\n";
+			exit(1);
+		}
+		file >> p->id;
+		file >> p->name;
+		file >> p->sex;
+		file >> p->building;
+		file >> p->room;
+		push(p);
+		file >> test;
+	}
+	file.close();
+}
+
+SIM::~SIM()
+{
+	if (head == NULL)
+	{
+		return;
+	}
+	Stu* p, * d;
+	p = head;
+	d = p;
+	while (p)
+	{
+		p = p->next;
+		free(d);
+		d = p;
+	}
 	return;
 }
-void printRoom(int building, int room)
+
+//output func
+inline void SIM::printStu(Stu* p)
 {
-	Stu *p;
+	std::cout << "Id:" << p->id << "\tName:" << p->name << "\tSex:" << p->sex << "\tBuilding:" << p->building << "\tRoom:" << p->room << '\n';
+	return;
+}
+
+void SIM::printRoom(int building, int room)
+{
+	Stu* p;
 	p = head;
 	while (p)
 	{
@@ -270,166 +172,185 @@ void printRoom(int building, int room)
 			printStu(p);
 		p = p->next;
 	}
-}
-char scask()
-{
-	char achar = '\0';
-	cin >> achar;
-	cin.ignore(numeric_limits<streamsize>::max(), '\n');
-	if (achar == '\n')
-	{
-		invalid();
-		scask();//recursion
-	}
-	return achar;
+	return;
 }
 
+//interaction func
+void SIM::lookUp()
+{
+	using namespace std;
+	cout << "Which way do you want to look up by?\n";
+	cout << "Press 1 by id.\n";
+	cout << "Press 2 by name.\n";
+	cout << "Press any other key to go back to the main menu.\n";
 
-//file r/w function
-/**TODO
-bool isUpdate(string a,)
-{
-	fs::path p = fs::current_path() / "";
-};
-**/
-int check()
-{
-	if (_access("si.txt", 02))
+	Stu* target;
+	target = NULL;
+	switch (scask())
 	{
-		cout << "'si.txt' appears not exist or permission denied! Please check." << endl;
-		cout << "If it does not exsit, please make a new one where program locate." << endl;
-		cout << "Press enter to exit." << endl;
-		cin.get();//pause
-		return 1;
+	case '1':
+	{
+		cout << "Id?" << endl;
+		int answer = 0;
+		cin >> answer;
+		cin.clear();
+		cin.ignore(numeric_limits<streamsize>::max(), '\n');
+		target = SIM::findById(answer);
+		break;
 	}
-	return 0;
+	case '2':
+	{
+		cout << "Name?" << endl;
+		string name;
+		cin >> name;
+		cin.clear();
+		cin.ignore(numeric_limits<streamsize>::max(), '\n');
+		target = SIM::findByName(name);
+		break;
+	}
+	default:;
+	}
+	if (target == NULL)
+	{
+		cout << "Not found.\n";
+		return;
+	}
+	printStu(target);
+	cout << "Modify record? y/n\n";
+	{
+		cout << "Choose one to proceed:\n";
+		while (1)
+		{
+			cout << "Press 1 to change id.\n";
+			cout << "Press 2 to change name.\n";
+			cout << "Press 3 to change sex.\n";
+			cout << "Press 4 to change building.\n";
+			cout << "Press 5 to change room.\n";
+			cout << "Press 6 to delete current record.\n";
+			cout << "Press any other key to cancel.\n";
+			int a = 0;
+			cin >> a;
+			cin.clear();
+			cin.ignore(numeric_limits<streamsize>::max(), '\n');
+			if (a <= 0 || a > 6)
+				break;
+			if (modify(target, a))
+				goto complete;
+			cout << "Continue to change other attribute? y/n\n";
+			if (scask() != 'y')
+				break;
+		}
+	}
+	complete:
+		cout << "Operation complete." << endl;
+	return;
 }
-int readf()
+
+void SIM::lookUpRoomates()
 {
-	Stu *p;
-	ifstream file("si.txt");
-	char test;
-	file >> test;
-	while (test == '0')
+	using namespace std;
+	Stu* p;
+	cout << "Which one do you want to search by?\n";
+	cout << "Press 1 by id.\n";
+	cout << "Press 2 by name.\n";
+	cout << "Press 3 by building with room.\n";
+	cout << "Press any other key back to main menu.\n";
+	switch (scask())
 	{
-		p = (Stu *)malloc(sizeof(Stu));
-		file >> p->id;
-		file >> p->name;
-		file >> p->sex;
-		file >> p->building;
-		file >> p->room;
-		link(p);
-		file >> test;
+	case '1':
+	{
+
+		cout << "Please input room member's id.\n";
+		int id = 0;
+		cin >> id;
+		cin.clear();
+		cin.ignore(numeric_limits<streamsize>::max(), '\n');
+		p = findById(id);
+		printRoom(p->building, p->room);
+		break;
 	}
-	file.close();
-	tail->next = NULL;
-	return 1;
+	case '2':
+	{
+		cout << "Please input room member's name.\n";
+		string name;
+		cin.clear();
+		cin.ignore(numeric_limits<streamsize>::max(), '\n');
+		p = findByName(name);
+		printRoom(p->building, p->room);
+		break;
+	}
+	case '3':
+		cout << "Please input the building of room.\n";
+		{
+			int building, room;
+			do
+			{
+				cout << "Building:" << endl;
+				cin >> building;
+				cin.clear();
+				cin.ignore(numeric_limits<streamsize>::max(), '\n');
+				if (building <= 0)
+					invalid();
+			} while (building <= 0);
+			do
+			{
+				cout << "Room:" << endl;
+				cin >> room;
+				cin.clear();
+				cin.ignore(numeric_limits<streamsize>::max(), '\n');
+				if (room <= 0 || room >= 1000)
+					invalid();
+			} while (room <= 0 || room >= 1000);
+			printRoom(building, room);
+			break;
+		}
+		break;
+	}
 }
-int savef()
+
+bool SIM::modify(Stu* p,int a)
 {
-	if(head== NULL)
-	{
-		cout<< "Nothing to write.Press enter to exit.";
-		return 1;
-	}
-	Stu *p;
-	p = head;
-	while (p->next)
-	{
-		p = p->next;
-	}
-	if (p != tail)
-	{
-		cout << "Data Integrity check failed! Saving canceled." << endl;
-		cin.get();
-		return 2;
-	}
-	//check si.txt
-	ofstream file("si.txt");//delete and write file
-	if(!file)
-		return 1;//file doesn't exist
-	cout<<"Checking complete.";
-	//start save file
-	p= head;
-	cout<<"Saving..."<<endl;
-	while (p)
-	{
-		file << '0' << p->id << p->name <<'\t'<< p->sex << p->building <<'\t'<< p->room <<endl;
-		p=p->next;
-	}
-	file << '1';
-		file.close();
-	return 1;//complete saving
-}
-Stu *findId(int id)
-{
-	Stu *p;
-	if (head == NULL)
-		return NULL;
-	p = head;
-	while (p && (p->id != id)) 
-	{
-		p = p->next;
-	}
-	return p;
-}
-Stu *findName( char *name)
-{
-	Stu *p;
-	p = head;
-	while (p && strcmp(name, p->name))
-	{
-		p = p->next;
-	}
-	return p;
-}
-int modify(Stu *p, int a)
-{
+	using namespace std;
 	switch (a)
 	{
 	case 1:
-		int addId;
+		int newId;
 		while (1)
 		{
 			cout << "Please input new id." << endl;
-			cin >> addId;
+			cin >> newId;
 			cin.clear();
 			cin.ignore(numeric_limits<streamsize>::max(), '\n');
-			p = NULL;
-			if (((addId > 100000000 || addId < 10000000)) || findId(addId))
+			if (((newId > 100000000 || newId < 10000000)) || findById(newId))
+			{
 				invalid();
+				cout << "Canceled modifying\n";
+				return false;
+			}
 			else
 				break;
 		}
-		p->id = addId;
-		return 1;
+		p->id = newId;
+		return true;
 	case 2:
-		cout << "Please input new name." << endl;
-		cin>> p->name;
+		cout << "Please input new name.\n";
+		cin >> p->name;
 		cin.clear();
 		cin.ignore(numeric_limits<streamsize>::max(), '\n');
-		return 1;
+		return true;
 	case 3:
-		sex:
-		cout << "Please input new sex.(m/f)" << endl;
-		cin >> p->sex;
+		char newSex;
+		cout << "Please input new sex.(m/f)\n";
+		cin >> newSex;
 		cin.clear();
 		cin.ignore(numeric_limits<streamsize>::max(), '\n');
-		switch (p->sex)
+		if (newSex == 'm' || newSex == 'f')
 		{
-		case 'f': break;//do like this is to suppurt changing sex manually
-		case 'F': break;//in si.txt . if an user whose CapsLK always on
-		case 'm': break;//feels like to do like the above, it will also
-		case 'M': break;//influence pirnt Stu part. so no auto-lowerscape
-		case 'n'://changing manually may no longer support in the next version
-		case 'N':
-		case 'y':
-		case 'Y': cout << "It'll be denfinately known to him/her" << endl;
-		default:
-			invalid();
-			goto sex;//a little indolently
+			p->sex = newSex;
+			return true;
 		}
-		return 1;
+		cout << "Canceled modifying\n";
+		return false;
 	case 4:
 		do
 		{
@@ -439,8 +360,7 @@ int modify(Stu *p, int a)
 			cin.ignore(numeric_limits<streamsize>::max(), '\n');
 			if (p->building <= 0)
 				invalid();
-		} 
-		while (p->building <= 0);
+		} while (p->building <= 0);
 		return 1;
 	case 5:
 		do
@@ -454,75 +374,82 @@ int modify(Stu *p, int a)
 		} while (p->room <= 0 || p->room >= 1000);
 	case 6:
 		printStu(p);
-		cout << "Delete any why? Press y to confirm." << endl;
-		switch (scask())
+		cout << "Delete any why? Press y to confirm.\n";
+		if (scask() == 'y')
 		{
-		case 'y':
-		case 'Y':
-		{
-			if (p == head)//if p is head of list
-			{ 
-				head = head->next;
-				free(p);
-				return 2;
-			}
-			//if p isn't head of list
-			//I have to admit that what write below is very stupid
-			Stu *pre;
-			pre = head;
-			while (pre->next != p)
-			{
-				pre = pre->next;
-			}
-			pre->next = p->next;
-			free(p);
-			return 2;
-		}
-		default:;
+			remove(p);
+			return true;
 		}
 	default:
-		return 0;
+		return false;
 	}
 }
-int create(Stu *p)
+
+bool SIM::create()
 {
+	using namespace std;
+	Stu* p;
+	p = (Stu*)malloc(sizeof(Stu));
 	for (int a = 1; a < 6; a++)
-		modify(p, a);
-	while(1)
-	{ 
+		if (!modify(p, a))
+		{
+			cout << "Adding the new student canceled.\n";
+			free(p);
+			return false;
+		}
+	while (1)
+	{
 		printStu(p);
-		cout << "Is this right?"<<endl<< "Press y to confirm, any other key to cancel."<<endl;
+		cout << "Is this right? y/n\nPress y to confirm, any other key to cancel.\n";
 		switch (scask())
 		{
 		case 'y':break;
 		case 'Y':break;
 		default:
-			cout << "Your information input before will lost. Abandon anyway?y/n" << endl;
+			cout << "The information inputed before will be lost. Proceed anyway? y/n\n";
 			char answer = scask();
-			if (answer == 'y' || answer == 'Y')
-			{ 
-				cout << "Add the new student canceled." << endl;
-				return 2;
+			if (answer == 'y')
+			{
+				cout << "Adding the new student canceled.\n";
+				free(p);
+				return false;
 			}
 		}
 		break;
 	}
-	link(p);
-	cout << "Add the new student successfully!" << endl;
-	return 1;
+	push(p);
+	cout << "Add the new student successfully!\n";
+	return true;
 }
-int link(Stu *p)
+
+//user interaction func
+void printHelp()
 {
-	if (head == NULL)
+	using namespace std;
+	cout << "Press 1 to look up a student or then modify it.\n";
+	cout << "Press 2 to check roommates.\n";
+	cout << "Press 3 to add a new student.\n";
+	cout << "Press 4 to save all changes\n";
+	cout << "Any other key to quit.\n";
+	cout << "Press h to see this message again.\n";
+}
+
+void invalid()
+{
+	using namespace std;
+	cout << "Invalid!\n";
+}
+
+char scask()
+{
+	using namespace std;
+	char tmp = '\0';
+	cin >> tmp;
+	cin.ignore(numeric_limits<streamsize>::max(), '\n');
+	if (tmp == '\n')
 	{
-		head = tail = p;
-		head->next = tail;
+		invalid();
+		scask();
 	}
-	else
-	{
-		tail->next = p;
-		tail = p;
-	}
-	tail->next = NULL;
-	return 1;
+	return tmp;
 }
