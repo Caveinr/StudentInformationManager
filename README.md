@@ -23,8 +23,8 @@ __打算做:__
 
 <del>数据持久化</del>:已实现  
 
-<del>OOP入门</del>:已完成  
-OOP入土:把链表单独拿出来做成模板父类  
+<del>面向类编程入门</del>:已完成  
+OOP入土:TODO  
 
 <del>实现快速排列(Quicksort)</del>:b树更香  
 
